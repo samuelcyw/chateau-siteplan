@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Interactive Floor Plan</title>
+  <title>Site Plan</title>
   <style>
     #floorplan-container {
       width: 100%;
@@ -10,28 +10,31 @@
       margin: 2em auto;
       border: 1px solid #ddd;
       box-shadow: 0 4px 24px #eee;
+      background: #fff;
+      overflow-x: auto;
+    }
+    #floorplan-container svg {
+      display: block;
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100%;
     }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">Interactive Floor Plan</h2>
   <div id="floorplan-container"></div>
   <script>
     const DATA_URL = 'https://dl.dropboxusercontent.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&st=ykft5fru&dl=1';
-
-    // Define the status colors to use
     const STATUS_COLOR = {
       "Available": "#CCEEEE",
       "Reserved": "orange",
       "Sold": "#FF7F7F"
     };
 
-    // 1. Load the SVG file (now using the new name)
     fetch('siteplan.svg')
       .then(res => res.text())
       .then(svg => {
         document.getElementById('floorplan-container').innerHTML = svg;
-        // After SVG is loaded, fetch status and update colors
         fetchStatusAndUpdate();
       });
 
@@ -39,11 +42,10 @@
       fetch(DATA_URL)
         .then(res => res.json())
         .then(data => {
-          // Get the array from the JSON
           const units = data['Array Aggregator output'] || [];
           units.forEach(unit => {
-            const id = unit.unitID; // e.g., "unit1"
-            const status = unit.status; // e.g., "Available"
+            const id = unit.unitID;
+            const status = unit.status;
             const shape = document.getElementById(`${id}-shape`);
             if (shape && STATUS_COLOR[status]) {
               shape.setAttribute('fill', STATUS_COLOR[status]);
