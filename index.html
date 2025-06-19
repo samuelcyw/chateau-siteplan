@@ -8,8 +8,8 @@ const STATUS_COLOR = {
   "Sold": "#FF7F7F"
 };
 
-// 1. Load the SVG file (update to your SVG filename)
-fetch('2025, 16_29_11 GMT-4.svg')
+// 1. Load the SVG file (now using the new name)
+fetch('siteplan.svg')
   .then(res => res.text())
   .then(svg => {
     document.getElementById('floorplan-container').innerHTML = svg;
