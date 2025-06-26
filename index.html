@@ -62,6 +62,29 @@
       border-radius: 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.07);
     }
+    /* Full-width banner image below siteplan */
+    .full-image-container {
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 38px auto;
+      background: #fff;
+    }
+    .full-image-container img {
+      width: 100vw;
+      max-width: 1920px;
+      height: auto;
+      display: block;
+      border-radius: 18px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.11);
+      object-fit: contain;
+    }
+    @media (max-width: 700px) {
+      .full-image-container img {
+        border-radius: 8px;
+      }
+    }
     .four-pics-container {
       display: flex;
       justify-content: center;
@@ -137,6 +160,11 @@
 
   <!-- Siteplan SVG loads here by JS -->
   <div id="floorplan-container"></div>
+
+  <!-- Full Width Image Below Siteplan -->
+  <div class="full-image-container">
+    <img src="a46864b9-8c79-43e7-9192-874be2e4e602.png" alt="Full Screen Image">
+  </div>
 
   <!-- 8 Images Under Siteplan -->
   <div class="four-pics-container">
