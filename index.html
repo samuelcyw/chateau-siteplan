@@ -132,8 +132,7 @@
   </div>
 
   <script>
-    // --- UPDATE THIS SVG URL WITH YOUR GITHUB RAW LINK ---
-    const SITEPLAN_SVG_URL = 'https://raw.githubusercontent.com/your-username/your-repo/main/path/to/siteplan.svg'; // <--- replace this!
+    // Your public Dropbox direct download links!
     const CUSTOMER_JSON_URL = 'https://www.dropbox.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
     const STATUS_JSON_URL = 'https://www.dropbox.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&raw=1';
 
@@ -156,7 +155,7 @@
       });
 
     function loadSiteplan() {
-      fetch(SITEPLAN_SVG_URL)
+      fetch('siteplan.svg')
         .then(res => res.text())
         .then(svg => {
           document.getElementById('floorplan-container').innerHTML = svg;
