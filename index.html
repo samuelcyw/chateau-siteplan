@@ -90,12 +90,11 @@
       Unavailable: '#CCCCCC'
     };
 
-    // Make sure these JSONs are in the same folder as this HTML and SVG!
-    const CUSTOMER_JSON_URL = 'customerdata.json';
-    const STATUS_JSON_URL = 'status.json';
+    // Use the direct Dropbox links!
+    const CUSTOMER_JSON_URL = 'https://dl.dropboxusercontent.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
+    const STATUS_JSON_URL = 'https://dl.dropboxusercontent.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&raw=1';
 
     let customerData = [];
-    let statusData = [];
 
     fetch(CUSTOMER_JSON_URL)
       .then(res => res.json())
@@ -120,15 +119,13 @@
         .then(data => {
           const units = data['Array Aggregator output'] || [];
           units.forEach(unit => {
-            const id = unit.unitId || unit.unitID; // e.g. unit76
+            const id = unit.unitId || unit.unitID;
+            if (!id) return;
             const status = unit.status;
-            const group = document.getElementById(id); // <g id="unit76">
-            if (group) {
-              // Color all shapes in this group
+            const group = document.getElementById(id);
+            if (group && STATUS_COLOR[status]) {
               group.querySelectorAll('path, rect, polygon, ellipse, circle').forEach(el => {
-                if (STATUS_COLOR[status]) {
-                  el.setAttribute('fill', STATUS_COLOR[status]);
-                }
+                el.setAttribute('fill', STATUS_COLOR[status]);
               });
               group.style.cursor = 'pointer';
               group.onclick = () => showUnitModal(id);
@@ -139,7 +136,7 @@
     }
 
     function showUnitModal(unitId) {
-      const u = customerData.find(x => x.unitId === unitId);
+      const u = customerData.find(x => x.unitId === unitId || x.unitID === unitId);
       let html = `<strong>Unit ${unitId.replace('unit','')}</strong><br>`;
       if (!u) {
         html += '<em>No data available.</em>';
