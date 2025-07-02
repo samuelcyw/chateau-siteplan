@@ -10,7 +10,7 @@
       padding: 0;
       width: 100vw;
       min-height: 100vh;
-      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background: #f6f8fa;
       overflow-x: hidden;
     }
@@ -19,19 +19,17 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 32px;
-      margin-bottom: 8px;
+      margin: 32px 0 8px;
     }
     .brand-logo {
       max-width: 240px;
       width: 18vw;
       min-width: 120px;
-      height: auto;
       background: #fff;
       border-radius: 24px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.04);
       padding: 12px 24px;
-      transition: box-shadow 0.2s;
+      transition: box-shadow .2s;
     }
     .brand-logo:hover {
       box-shadow: 0 8px 36px rgba(0,0,0,0.10);
@@ -41,89 +39,80 @@
       max-width: 100vw;
       margin: 0;
       padding: 0;
-      border: none;
       background: #fff;
       overflow-x: auto;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 64vh;
-      box-shadow: none;
-      border-radius: 0;
     }
     #floorplan-container svg {
       display: block;
       width: 100vw !important;
       max-width: 100vw !important;
-      min-width: 0 !important;
       height: auto !important;
       aspect-ratio: 16/9;
       margin: 0 auto;
-      border-radius: 0;
-      box-shadow: none;
     }
     /* Modal styles */
     #unit-modal {
-      position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
-      display: none; align-items: center; justify-content: center;
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: none;
+      align-items: center; justify-content: center;
       z-index: 9999; pointer-events: none;
     }
     #unit-modal .modal-overlay {
-      position: absolute; left: 0; top: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.26); pointer-events: all;
+      position: absolute; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.26);
+      pointer-events: all;
     }
     #unit-modal .modal-content {
       position: relative;
       background: #fff;
       border-radius: 18px;
       box-shadow: 0 16px 48px rgba(0,0,0,0.13);
-      max-width: 94vw; width: 370px; padding: 30px 26px 18px 26px;
+      max-width: 94vw;
+      width: 370px;
+      padding: 30px 26px 18px;
       z-index: 2; pointer-events: all;
       animation: fadeInModal .27s;
     }
-    @keyframes fadeInModal { from { opacity: 0; transform: translateY(40px);} to {opacity:1; transform: none;}}
+    @keyframes fadeInModal {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: none; }
+    }
     #modal-close-btn {
-      position: absolute; right: 18px; top: 12px; border: none; background: none;
+      position: absolute; top: 12px; right: 18px;
+      border: none; background: none;
       font-size: 1.9em; cursor: pointer; color: #888;
       transition: color .13s;
     }
-    #modal-close-btn:hover { color: #222;}
+    #modal-close-btn:hover { color: #222; }
     #modal-details {
       margin-top: 12px;
       font-size: 1.1em;
-      line-height: 1.7;
+      line-height: 1.6;
     }
-    #unit-modal[style*='display: flex'] { pointer-events: all;}
     @media (max-width: 800px) {
-      .brand-logo-container {
-        margin-top: 16px;
-        margin-bottom: 4px;
-      }
-      #floorplan-container {
-        min-height: 40vh;
-        margin-bottom: 14px;
-      }
       #unit-modal .modal-content {
         width: 95vw;
-        min-width: 0;
-        padding: 18px 8vw 16px 8vw;
+        padding: 18px 8vw 16px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Brand Logo -->
   <div class="brand-logo-container">
     <img class="brand-logo"
-      src="https://www.dropbox.com/scl/fi/b5dl86x1foeds8svh5c73/Logo-Regency.png?rlkey=3fe9mjacnnpuzvaxd9ytpaut9&st=dx3j8n2h&dl=1"
+      src="https://www.dropbox.com/scl/fi/b5dl86x1foeds8svh5c73/Logo-Regency.png?rlkey=3fe9mjacnnpuzvaxd9ytpaut9&raw=1"
       alt="Regency Brand Logo">
   </div>
 
-  <!-- FULL WIDTH Siteplan SVG loads here by JS -->
   <div id="floorplan-container"></div>
 
-  <!-- Modal for customer data -->
-  <div id="unit-modal" style="display:none;">
+  <div id="unit-modal">
     <div class="modal-overlay"></div>
     <div class="modal-content">
       <button id="modal-close-btn">&times;</button>
@@ -132,80 +121,73 @@
   </div>
 
   <script>
-    // Your public Dropbox direct download links!
-    const CUSTOMER_JSON_URL = 'https://www.dropbox.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
-    const STATUS_JSON_URL = 'https://www.dropbox.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&raw=1';
-
     const STATUS_COLOR = {
-      "Available": "#CCEEEE",
-      "Reserved": "orange",
-      "Duplicate": "#FFD700",
-      "Sold": "#FF7F7F"
+      Available:  '#CCEEEE',
+      Reserved:   'orange',
+      Duplicate:  '#FFD700',
+      Sold:       '#FF7F7F'
     };
+
+    const CUSTOMER_JSON_URL =
+      'https://www.dropbox.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
+    const STATUS_JSON_URL =
+      'https://www.dropbox.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&raw=1';
 
     let customerData = [];
     fetch(CUSTOMER_JSON_URL)
       .then(res => res.json())
       .then(data => {
-        if (data.Data && data.Data[0] && data.Data[0].array) {
-          customerData = data.Data[0].array;
-        } else if (Array.isArray(data)) {
-          customerData = data;
-        }
-      });
+        customerData = data.Data?.[0]?.array || (Array.isArray(data) ? data : []);
+      })
+      .catch(err => console.error('Customer JSON error:', err));
 
     function loadSiteplan() {
       fetch('siteplan.svg')
         .then(res => res.text())
         .then(svg => {
           document.getElementById('floorplan-container').innerHTML = svg;
-          fetchStatusAndUpdate();
-        });
+          applyStatusAndClicks();
+        })
+        .catch(err => console.error('SVG load error:', err));
     }
 
-    function fetchStatusAndUpdate() {
+    function applyStatusAndClicks() {
       fetch(STATUS_JSON_URL)
         .then(res => res.json())
         .then(data => {
           const units = data['Array Aggregator output'] || [];
-          units.forEach(unit => {
-            const id = unit.unitID || unit.unitId;
-            const status = unit.status;
-            const shape = document.getElementById(`${id}-shape`);
-            if (shape && STATUS_COLOR[status]) {
-              shape.setAttribute('fill', STATUS_COLOR[status]);
-              shape.style.cursor = "pointer";
-              shape.onclick = (evt) => showUnitModal(id);
+          units.forEach(u => {
+            const id = u.unitId;  // use JSON's unitId
+            const shape = document.getElementById(id + '-shape');
+            if (shape && STATUS_COLOR[u.status]) {
+              shape.setAttribute('fill', STATUS_COLOR[u.status]);
+              shape.style.cursor = 'pointer';
+              shape.onclick = () => showUnitModal(id);
             }
           });
         })
-        .catch(err => {
-          console.error("Error loading status JSON:", err);
-        });
+        .catch(err => console.error('Status JSON error:', err));
     }
 
     function showUnitModal(unitId) {
-      // Find the customer data for this unit
-      const data = customerData.find(u => (u.unitId || u.unitID) === unitId);
-      let html = `<b>Unit: ${unitId.replace("unit","")}</b><br>`;
-      if (!data) {
-        html += "<em>No data available.</em>";
+      const u = customerData.find(x => x.unitId === unitId);
+      let html = `<strong>Unit ${unitId.replace('unit','')}</strong><br>`;
+      if (!u) {
+        html += '<em>No data available.</em>';
       } else {
-        if (data.status) html += `<b>Status:</b> ${data.status}<br>`;
-        if (data["Customer Name"]) html += `<b>Customer:</b> ${data["Customer Name"]}<br>`;
-        if (data["Sold Price"]) html += `<b>Sold Price:</b> $${data["Sold Price"]}<br>`;
-        if (data["Reserved Date"]) html += `<b>Reserved Date:</b> ${data["Reserved Date"]}<br>`;
-        if (data["Sold Date"]) html += `<b>Sold Date:</b> ${data["Sold Date"]}<br>`;
-        if (data["Payment Record"]) html += `<b>Payment:</b> ${data["Payment Record"]}<br>`;
-        if (data["Contract "]) html += `<b>Contract:</b> ${data["Contract "]}<br>`;
-        if (data["Customer Worksheet"]) html += `<b>Worksheet:</b> ${data["Customer Worksheet"]}<br>`;
-        if (data["Block"]) html += `<b>Block:</b> ${data["Block"]}<br>`;
+        ['status','Customer Name','Sold Price','Reserved Date','Sold Date',
+         'Payment Record','Contract ','Customer Worksheet','Block']
+        .forEach(field => {
+          if (u[field]) {
+            html += `<b>${field.replace(/(^\w|\s\w)/g,c=>c.toUpperCase())}:</b> ${u[field]}<br>`;
+          }
+        });
       }
       document.getElementById('modal-details').innerHTML = html;
       document.getElementById('unit-modal').style.display = 'flex';
     }
 
-    document.addEventListener("DOMContentLoaded", function(){
+    document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('modal-close-btn').onclick = () => {
         document.getElementById('unit-modal').style.display = 'none';
       };
@@ -214,9 +196,7 @@
       };
     });
 
-    // Initial load
     loadSiteplan();
-    // Refresh siteplan every 60 seconds (60000 ms)
     setInterval(loadSiteplan, 60000);
   </script>
 </body>
