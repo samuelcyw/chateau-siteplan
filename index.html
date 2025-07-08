@@ -158,6 +158,16 @@
         .catch(err => console.error('Status JSON error:', err));
     }
 
+    // Helper function to check if string is a valid URL
+    function isValidUrl(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
     function showUnitModal(unitId) {
       const u = customerData.find(x => x.unitId === unitId || x.unitID === unitId);
       let html = `<div class="unit-header">Unit ${unitId.replace('unit','')}</div>`;
@@ -169,15 +179,17 @@
           ['Customer','Customer Name'],
           ['Reserved Date','Reserved Date'],
           ['Sold Price','Sold Price'],
-          ['Sold Date','Sold Date'],
-          ['Payment','Payment Record'],
-          ['Contract','Contract '],
-          ['Worksheet','Customer Worksheet'],
-          ['Block','Block']
+          ['Reservation agreement','Reservation agreement'],
+          ['Deposit record','Deposit record'],
+          ['ID','ID']
         ];
         fields.forEach(([label, key]) => {
           if (u[key]) {
-            html += `<div class="info-row"><span class="info-label">${label}:</span> <span class="info-value">${u[key]}</span></div>`;
+            if (['Reservation agreement', 'Deposit record', 'ID'].includes(label) && isValidUrl(u[key])) {
+              html += `<div class="info-row"><span class="info-label">${label}:</span> <span class="info-value"><a href="${u[key]}" target="_blank" rel="noopener noreferrer">click here</a></span></div>`;
+            } else {
+              html += `<div class="info-row"><span class="info-label">${label}:</span> <span class="info-value">${u[key]}</span></div>`;
+            }
           }
         });
       }
