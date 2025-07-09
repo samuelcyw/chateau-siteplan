@@ -175,13 +175,14 @@
         html += '<em style="color:#aaa;">No data available.</em>';
       } else {
         const fields = [
-          ['Status','status'],
-          ['Customer','Customer Name'],
-          ['Reserved Date','Reserved Date'],
-          ['Sold Price','Sold Price'],
-          ['Reservation agreement','Reservation agreement'],
-          ['Deposit record','Deposit record'],
-          ['ID','ID']
+  ['Status','status'],
+  ['Customer','Customer Name'],
+  ['Reserved Date','Reserved Date'],
+  ['Sold Price','Sold Price'],
+  ['Bedroom', 'Bedroom'],           
+  ['Reservation agreement','Reservation agreement'],
+  ['Deposit record','Deposit record'],
+  ['ID','ID']
         ];
         fields.forEach(([label, key]) => {
           if (u[key]) {
