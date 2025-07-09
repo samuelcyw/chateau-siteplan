@@ -10,6 +10,23 @@
       font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa;
       overflow-x: hidden;
     }
+    nav {
+      background: #244385; 
+      color: white; 
+      padding: 12px 24px; 
+      font-size: 1.15em;
+    }
+    nav a {
+      color: white; 
+      margin-right: 24px; 
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    nav a:last-child { margin-right: 0; }
+    nav a:hover {
+      opacity: 0.7;
+    }
     .brand-logo-container {
       width: 100vw; display: flex; justify-content: center; align-items: center;
       margin: 32px 0 8px;
@@ -87,10 +104,15 @@
     @media (max-width: 700px) {
       #unit-modal .modal-content { width: 97vw; padding: 20px 6vw 16px 6vw; }
       #modal-details .unit-header { font-size: 1.45em; }
+      nav { font-size: 1em; padding: 10px 4vw; }
     }
   </style>
 </head>
 <body>
+  <nav>
+    <a href="index.html">Site Plan</a>
+    <a href="data.html">Data</a>
+  </nav>
   <div class="brand-logo-container">
     <img class="brand-logo"
       src="https://www.dropbox.com/scl/fi/b5dl86x1foeds8svh5c73/Logo-Regency.png?rlkey=3fe9mjacnnpuzvaxd9ytpaut9&raw=1"
