@@ -266,21 +266,27 @@
       if (field) {
         valsEl.style.display = "";
         let options = [];
-        if (field === "status") options = STATUS_OPTIONS;
-        else options = Array.from(new Set(allData.map(r=>(r[field]||"")))).filter(v=>v);
+        if (field === "status") {
+          options = STATUS_OPTIONS;
+        } else {
+          options = Array.from(new Set(allData.map(r=>(r[field]||"")))).filter(v=>v && v !== "undefined");
+          options.sort();
+        }
         valsEl.innerHTML = options.map(opt=>
           `<option value="${opt}"${currentFilterVals.includes(opt) ? " selected" : ""}>${opt}</option>`).join("");
-        // Activate Choices.js
-        choicesInstance = new Choices(valsEl, {
-          removeItemButton: true,
-          shouldSort: false,
-          searchEnabled: false,
-          placeholderValue: 'Select...'
-        });
-        valsEl.addEventListener('change', function() {
-          currentFilterVals = Array.from(this.selectedOptions).map(opt=>opt.value);
-          renderTable();
-        });
+        // Recreate Choices.js every time
+        setTimeout(() => {
+          choicesInstance = new Choices(valsEl, {
+            removeItemButton: true,
+            shouldSort: false,
+            searchEnabled: false,
+            placeholderValue: 'Select...'
+          });
+          valsEl.addEventListener('change', function() {
+            currentFilterVals = Array.from(this.selectedOptions).map(opt=>opt.value);
+            renderTable();
+          });
+        }, 1);
       }
     }
 
