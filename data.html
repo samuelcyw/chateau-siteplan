@@ -5,89 +5,52 @@
   <title>Regency Data Editor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f6f8fa;
-      margin: 0;
-      padding: 0;
-    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; margin: 0; padding: 0; }
     nav {
-      background: #050039;
-      color: white;
-      padding: 12px 32px;
-      font-size: 1.13em;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background: #050039; color: white; padding: 12px 32px; font-size: 1.13em;
+      position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between;
       box-shadow: 0 2px 16px rgba(0,0,0,0.03);
     }
-    .nav-left { display: flex; align-items: center; }
     .nav-logo { height: 38px; width: auto; border-radius: 10px; }
-    .nav-links a {
-      color: white;
-      margin-left: 38px;
-      text-decoration: none;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      padding: 7px 16px;
-      border-radius: 18px;
-      transition: opacity 0.2s, background 0.14s;
-    }
-    .nav-links a:hover {
-      background: rgba(255,255,255,0.07);
-      opacity: 0.82;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 38px auto;
-      background: #fff;
-      padding: 32px 18px 32px 18px;
-      border-radius: 14px;
-      box-shadow: 0 6px 32px rgba(0,0,0,0.06);
-    }
+    .nav-links a { color: white; margin-left: 38px; text-decoration: none; font-weight: 500; letter-spacing: 0.01em; padding: 7px 16px; border-radius: 18px; transition: opacity 0.2s, background 0.14s; }
+    .nav-links a:hover { background: rgba(255,255,255,0.07); opacity: 0.82; }
+    .container { max-width: 1200px; margin: 38px auto; background: #fff; padding: 32px 18px 32px 18px; border-radius: 14px; box-shadow: 0 6px 32px rgba(0,0,0,0.06);}
     h2 { color: #244385; }
-    table {
-      width: 100%; border-collapse: collapse; background: #fff; font-size: 1em;
-    }
-    th, td {
-      border: 1px solid #d4d8e1; padding: 7px 8px; text-align: left;
-    }
-    th { background: #f6f8fa; }
+    #statsbar { margin-bottom: 22px; padding: 10px 12px 7px 5px; background: #f8fafd; border-radius: 12px; font-size:1.12em; display: flex; flex-wrap:wrap; gap:18px; align-items:center;}
+    .stat { margin-right:28px; font-weight:500; color:#244385; }
+    .stat .val { font-size:1.25em; font-weight:bold; margin-right:4px; color:#15172a; }
+    #filterInput { padding:7px 14px; width: 68%; margin-bottom:18px; font-size:1em; border:1.2px solid #b8bdcc; border-radius:8px;}
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 1em; margin-top:10px;}
+    th, td { border: 1px solid #d4d8e1; padding: 7px 8px; text-align: left;}
+    th { background: #f6f8fa; cursor:pointer; user-select:none; }
     tr:nth-child(even) { background: #f9fbfd; }
-    .actions button {
-      margin-right: 6px;
-      background: #244385;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 4px 12px;
-      font-size: 0.97em;
-      cursor: pointer;
-      transition: background 0.13s;
-    }
+    .actions button { margin-right: 6px; background: #244385; color: white; border: none; border-radius: 5px; padding: 4px 12px; font-size: 0.97em; cursor: pointer; transition: background 0.13s;}
     .actions button:hover { background: #050039; }
+    .status-badge { display:inline-block; padding:3px 13px; border-radius:12px; color:white; font-weight:500; font-size:0.97em;}
+    .status-Available { background:#32c683;}
+    .status-Reserved { background:#fcbe2d;}
+    .status-Unavailable { background:#c9ccd5; color:#465164;}
+    .status-Sold { background:#ea5b6d;}
+    .update-flash { animation:flash 0.7s; background: #eafadf !important;}
+    @keyframes flash { 0%{background:#eafadf;} 100%{background:inherit;} }
     #addForm input { margin-right: 8px; margin-bottom: 8px; padding: 5px 7px; border: 1px solid #d4d8e1; border-radius: 5px; font-size: 1em; }
-    #addForm button {
-      background: #2a6eff; color: white; border: none; border-radius: 5px; padding: 5px 18px; font-size: 1em; cursor: pointer; margin-top: 4px;
-    }
+    #addForm button { background: #2a6eff; color: white; border: none; border-radius: 5px; padding: 5px 18px; font-size: 1em; cursor: pointer; margin-top: 4px;}
     #addForm button:hover { background: #244385; }
-    @media (max-width: 700px) {
-      nav { flex-direction: column; align-items: stretch; padding: 8px 3vw; }
-      .nav-links { margin-top: 5px; }
-      .nav-links a { margin-left: 20px; font-size: 1em; }
-      .nav-logo { height: 30px; }
+    @media (max-width: 900px) {
+      nav { flex-direction: column; align-items: stretch; padding: 8px 3vw;}
+      .nav-links { margin-top: 5px;}
+      .nav-links a { margin-left: 20px; font-size: 1em;}
+      .nav-logo { height: 30px;}
+      #filterInput { width:100%;}
+      table { font-size:0.98em;}
+      #statsbar{flex-direction:column; gap:8px;}
     }
   </style>
 </head>
 <body>
   <nav>
     <div class="nav-left">
-      <a href="index.html">
-        <img class="nav-logo" src="https://www.dropbox.com/scl/fi/7awuuf1ohhvxepbvfcth6/logo2.svg?rlkey=vgv8cijqf8fcv3jbp4ag2tfjv&raw=1" alt="Regency Logo" />
-      </a>
+      <a href="index.html"><img class="nav-logo" src="https://www.dropbox.com/scl/fi/7awuuf1ohhvxepbvfcth6/logo2.svg?rlkey=vgv8cijqf8fcv3jbp4ag2tfjv&raw=1" alt="Regency Logo" /></a>
     </div>
     <div class="nav-links">
       <a href="index.html">Inventory</a>
@@ -96,6 +59,27 @@
   </nav>
   <div class="container">
     <h2>Property Data Editor</h2>
+    <div id="statsbar"></div>
+    <input id="filterInput" placeholder="Type to filter any field (e.g. Block 5, Available, Emely)" />
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th data-col="block">Block</th>
+          <th data-col="unitid">Unit ID</th>
+          <th data-col="status">Status</th>
+          <th data-col="customer_name">Customer</th>
+          <th data-col="reserved_date">Reserved Date</th>
+          <th data-col="sold_price">Sold Price</th>
+          <th data-col="bedroom">Bedroom</th>
+          <th data-col="reservation_agreement">Reservation Agreement</th>
+          <th data-col="deposit_record">Deposit Record</th>
+          <th data-col="id_doc">ID Doc</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <h3 style="margin-top:30px;">Add New Unit</h3>
     <form id="addForm">
       <input name="block" placeholder="Block" required />
       <input name="unitid" placeholder="Unit ID" required />
@@ -109,63 +93,131 @@
       <input name="id_doc" placeholder="ID Doc" />
       <button type="submit">Add</button>
     </form>
-    <br />
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th>Block</th>
-          <th>Unit ID</th>
-          <th>Status</th>
-          <th>Customer</th>
-          <th>Reserved Date</th>
-          <th>Sold Price</th>
-          <th>Bedroom</th>
-          <th>Reservation Agreement</th>
-          <th>Deposit Record</th>
-          <th>ID Doc</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
   </div>
   <script>
     const API_URL = "/.netlify/functions/myunits";
-
+    let allData = [];
+    let editingId = null;
+    let filterValue = "";
+    let sortCol = null, sortAsc = true, flashRowId = null;
     function fetchData() {
       fetch(API_URL)
         .then(res => res.json())
-        .then(renderTable);
+        .then(data => {
+          allData = data;
+          renderStats();
+          renderTable();
+        });
     }
-
-    function renderTable(data) {
+    function renderStats() {
+      const total = allData.length;
+      const available = allData.filter(r => (r.status||"").toLowerCase() === "available").length;
+      const reserved = allData.filter(r => (r.status||"").toLowerCase() === "reserved").length;
+      const unavailable = allData.filter(r => (r.status||"").toLowerCase() === "unavailable").length;
+      const sold = allData.filter(r => (r.status||"").toLowerCase() === "sold").length;
+      const bedrooms4 = allData.filter(r => r.bedroom == 4).length;
+      const bedrooms5 = allData.filter(r => r.bedroom == 5).length;
+      document.getElementById("statsbar").innerHTML =
+        `<span class="stat"><span class="val">${total}</span>Units</span>` +
+        `<span class="stat"><span class="val">${available}</span>Available</span>` +
+        `<span class="stat"><span class="val">${reserved}</span>Reserved</span>` +
+        `<span class="stat"><span class="val">${sold}</span>Sold</span>` +
+        `<span class="stat"><span class="val">${unavailable}</span>Unavailable</span>` +
+        `<span class="stat"><span class="val">${bedrooms4}</span>4-Bedroom</span>` +
+        `<span class="stat"><span class="val">${bedrooms5}</span>5-Bedroom</span>`;
+    }
+    function renderTable() {
       const tbody = document.querySelector("#dataTable tbody");
       tbody.innerHTML = "";
-      data.forEach(row => {
+      let filtered = allData.filter(row => {
+        let v = filterValue.toLowerCase();
+        if (!v) return true;
+        return Object.values(row).some(val => (val||"").toString().toLowerCase().includes(v));
+      });
+      if (sortCol) {
+        filtered = filtered.slice().sort((a,b)=>{
+          let va = (a[sortCol]||"").toString().toLowerCase();
+          let vb = (b[sortCol]||"").toString().toLowerCase();
+          if (va < vb) return sortAsc ? -1 : 1;
+          if (va > vb) return sortAsc ? 1 : -1;
+          return 0;
+        });
+      }
+      filtered.forEach(row => {
+        const isEditing = editingId === row.id;
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><input value="${row.block || ""}" onchange="updateField(${row.id},'block',this.value)" style="width:64px"/></td>
-          <td><input value="${row.unitid || ""}" onchange="updateField(${row.id},'unitid',this.value)" style="width:70px"/></td>
-          <td><input value="${row.status || ""}" onchange="updateField(${row.id},'status',this.value)" style="width:90px"/></td>
-          <td><input value="${row.customer_name || ""}" onchange="updateField(${row.id},'customer_name',this.value)" style="width:120px"/></td>
-          <td><input value="${row.reserved_date || ""}" onchange="updateField(${row.id},'reserved_date',this.value)" style="width:90px"/></td>
-          <td><input value="${row.sold_price || ""}" onchange="updateField(${row.id},'sold_price',this.value)" style="width:80px"/></td>
-          <td><input value="${row.bedroom || ""}" onchange="updateField(${row.id},'bedroom',this.value)" style="width:50px"/></td>
-          <td><input value="${row.reservation_agreement || ""}" onchange="updateField(${row.id},'reservation_agreement',this.value)" style="width:120px"/></td>
-          <td><input value="${row.deposit_record || ""}" onchange="updateField(${row.id},'deposit_record',this.value)" style="width:120px"/></td>
-          <td><input value="${row.id_doc || ""}" onchange="updateField(${row.id},'id_doc',this.value)" style="width:90px"/></td>
-        `;
+        if (flashRowId === row.id) tr.className = "update-flash";
+        let statusCell = `<span class="status-badge status-${(row.status||"").replace(/\s/g,"")}">${row.status||""}</span>`;
+        if (isEditing) {
+          tr.innerHTML = `
+            <td><input value="${row.block||""}" id="edit_block" style="width:60px"></td>
+            <td><input value="${row.unitid||""}" id="edit_unitid" style="width:68px"></td>
+            <td><input value="${row.status||""}" id="edit_status" style="width:84px"></td>
+            <td><input value="${row.customer_name||""}" id="edit_customer" style="width:112px"></td>
+            <td><input value="${row.reserved_date||""}" id="edit_reserved" style="width:80px"></td>
+            <td><input value="${row.sold_price||""}" id="edit_price" style="width:70px"></td>
+            <td><input value="${row.bedroom||""}" id="edit_bedroom" style="width:40px"></td>
+            <td><input value="${row.reservation_agreement||""}" id="edit_agreement" style="width:112px"></td>
+            <td><input value="${row.deposit_record||""}" id="edit_deposit" style="width:112px"></td>
+            <td><input value="${row.id_doc||""}" id="edit_iddoc" style="width:80px"></td>
+            <td class="actions">
+              <button onclick="saveEdit(${row.id})">Save</button>
+              <button onclick="cancelEdit()">Cancel</button>
+            </td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td>${row.block||""}</td>
+            <td>${row.unitid||""}</td>
+            <td>${statusCell}</td>
+            <td>${row.customer_name||""}</td>
+            <td>${row.reserved_date||""}</td>
+            <td>${row.sold_price||""}</td>
+            <td>${row.bedroom||""}</td>
+            <td>${row.reservation_agreement||""}</td>
+            <td>${row.deposit_record||""}</td>
+            <td>${row.id_doc||""}</td>
+            <td class="actions">
+              <button onclick="editRow(${row.id})">Edit</button>
+            </td>
+          `;
+        }
         tbody.appendChild(tr);
       });
+      flashRowId = null;
     }
-
-    function updateField(id, field, value) {
+    function editRow(id) {
+      editingId = id;
+      renderTable();
+    }
+    function cancelEdit() {
+      editingId = null;
+      renderTable();
+    }
+    function saveEdit(id) {
+      const updated = {
+        id,
+        block: document.getElementById("edit_block").value,
+        unitid: document.getElementById("edit_unitid").value,
+        status: document.getElementById("edit_status").value,
+        customer_name: document.getElementById("edit_customer").value,
+        reserved_date: document.getElementById("edit_reserved").value,
+        sold_price: document.getElementById("edit_price").value,
+        bedroom: document.getElementById("edit_bedroom").value,
+        reservation_agreement: document.getElementById("edit_agreement").value,
+        deposit_record: document.getElementById("edit_deposit").value,
+        id_doc: document.getElementById("edit_iddoc").value
+      };
       fetch(API_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, [field]: value })
-      }).then(fetchData);
+        body: JSON.stringify(updated)
+      }).then(() => {
+        editingId = null;
+        flashRowId = id;
+        fetchData();
+      });
     }
-
     document.getElementById("addForm").onsubmit = function(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -179,7 +231,19 @@
         e.target.reset();
       });
     };
-
+    document.getElementById("filterInput").oninput = function(e) {
+      filterValue = e.target.value;
+      renderTable();
+    };
+    // Sort logic
+    document.querySelectorAll("#dataTable th[data-col]").forEach(th=>{
+      th.onclick = ()=>{
+        const col = th.dataset.col;
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+        renderTable();
+      };
+    });
     fetchData();
   </script>
 </body>
