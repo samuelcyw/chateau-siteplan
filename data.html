@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Regency Data Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background: #050039;
+      color: white;
+      padding: 12px 32px;
+      font-size: 1.13em;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.03);
+    }
+    .nav-left { display: flex; align-items: center; }
+    .nav-logo { height: 38px; width: auto; border-radius: 10px; }
+    .nav-links a {
+      color: white;
+      margin-left: 38px;
+      text-decoration: none;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      padding: 7px 16px;
+      border-radius: 18px;
+      transition: opacity 0.2s, background 0.14s;
+    }
+    .nav-links a:hover {
+      background: rgba(255,255,255,0.07);
+      opacity: 0.82;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 38px auto;
+      background: #fff;
+      padding: 32px 18px 32px 18px;
+      border-radius: 14px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.06);
+    }
+    h2 { color: #244385; }
+    table {
+      width: 100%; border-collapse: collapse; background: #fff; font-size: 1em;
+    }
+    th, td {
+      border: 1px solid #d4d8e1; padding: 7px 8px; text-align: left;
+    }
+    th { background: #f6f8fa; }
+    tr:nth-child(even) { background: #f9fbfd; }
+    .actions button {
+      margin-right: 6px;
+      background: #244385;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 12px;
+      font-size: 0.97em;
+      cursor: pointer;
+      transition: background 0.13s;
+    }
+    .actions button:hover { background: #050039; }
+    #addForm input { margin-right: 8px; margin-bottom: 8px; padding: 5px 7px; border: 1px solid #d4d8e1; border-radius: 5px; font-size: 1em; }
+    #addForm button {
+      background: #2a6eff; color: white; border: none; border-radius: 5px; padding: 5px 18px; font-size: 1em; cursor: pointer; margin-top: 4px;
+    }
+    #addForm button:hover { background: #244385; }
+    @media (max-width: 700px) {
+      nav { flex-direction: column; align-items: stretch; padding: 8px 3vw; }
+      .nav-links { margin-top: 5px; }
+      .nav-links a { margin-left: 20px; font-size: 1em; }
+      .nav-logo { height: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-left">
+      <a href="index.html">
+        <img class="nav-logo" src="https://www.dropbox.com/scl/fi/7awuuf1ohhvxepbvfcth6/logo2.svg?rlkey=vgv8cijqf8fcv3jbp4ag2tfjv&raw=1" alt="Regency Logo" />
+      </a>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Inventory</a>
+      <a href="data.html">Data</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Property Data Editor</h2>
+    <form id="addForm">
+      <input name="block" placeholder="Block" required />
+      <input name="unitid" placeholder="Unit ID" required />
+      <input name="status" placeholder="Status" required />
+      <input name="customer_name" placeholder="Customer Name" />
+      <input name="reserved_date" placeholder="Reserved Date" />
+      <input name="sold_price" placeholder="Sold Price" />
+      <input name="bedroom" placeholder="Bedroom" type="number" />
+      <input name="reservation_agreement" placeholder="Reservation Agreement" />
+      <input name="deposit_record" placeholder="Deposit Record" />
+      <input name="id_doc" placeholder="ID Doc" />
+      <button type="submit">Add</button>
+    </form>
+    <br />
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Block</th>
+          <th>Unit ID</th>
+          <th>Status</th>
+          <th>Customer</th>
+          <th>Reserved Date</th>
+          <th>Sold Price</th>
+          <th>Bedroom</th>
+          <th>Reservation Agreement</th>
+          <th>Deposit Record</th>
+          <th>ID Doc</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    const API_URL = "/.netlify/functions/myunits";
+
+    function fetchData() {
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(renderTable);
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input value="${row.block || ""}" onchange="updateField(${row.id},'block',this.value)" style="width:64px"/></td>
+          <td><input value="${row.unitid || ""}" onchange="updateField(${row.id},'unitid',this.value)" style="width:70px"/></td>
+          <td><input value="${row.status || ""}" onchange="updateField(${row.id},'status',this.value)" style="width:90px"/></td>
+          <td><input value="${row.customer_name || ""}" onchange="updateField(${row.id},'customer_name',this.value)" style="width:120px"/></td>
+          <td><input value="${row.reserved_date || ""}" onchange="updateField(${row.id},'reserved_date',this.value)" style="width:90px"/></td>
+          <td><input value="${row.sold_price || ""}" onchange="updateField(${row.id},'sold_price',this.value)" style="width:80px"/></td>
+          <td><input value="${row.bedroom || ""}" onchange="updateField(${row.id},'bedroom',this.value)" style="width:50px"/></td>
+          <td><input value="${row.reservation_agreement || ""}" onchange="updateField(${row.id},'reservation_agreement',this.value)" style="width:120px"/></td>
+          <td><input value="${row.deposit_record || ""}" onchange="updateField(${row.id},'deposit_record',this.value)" style="width:120px"/></td>
+          <td><input value="${row.id_doc || ""}" onchange="updateField(${row.id},'id_doc',this.value)" style="width:90px"/></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateField(id, field, value) {
+      fetch(API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, [field]: value })
+      }).then(fetchData);
+    }
+
+    document.getElementById("addForm").onsubmit = function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const json = Object.fromEntries(formData.entries());
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json)
+      }).then(() => {
+        fetchData();
+        e.target.reset();
+      });
+    };
+
+    fetchData();
+  </script>
+</body>
+</html>
