@@ -5,46 +5,43 @@
   <title>Regency Data Editor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; margin: 0; padding: 0; }
-    nav {
-      background: #050039; color: white; padding: 12px 32px; font-size: 1.13em;
-      position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.03);
-    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; margin: 0; padding: 0;}
+    nav { background: #050039; color: white; padding: 12px 32px; font-size: 1.13em; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 16px rgba(0,0,0,0.03);}
     .nav-logo { height: 38px; width: auto; border-radius: 10px; }
     .nav-links a { color: white; margin-left: 38px; text-decoration: none; font-weight: 500; letter-spacing: 0.01em; padding: 7px 16px; border-radius: 18px; transition: opacity 0.2s, background 0.14s; }
-    .nav-links a:hover { background: rgba(255,255,255,0.07); opacity: 0.82; }
-    .container { max-width: 1200px; margin: 38px auto; background: #fff; padding: 32px 18px 32px 18px; border-radius: 14px; box-shadow: 0 6px 32px rgba(0,0,0,0.06);}
+    .nav-links a:hover { background: rgba(255,255,255,0.07); opacity: 0.82;}
+    .container { max-width: 100vw; margin: 32px auto; background: #fff; padding: 22px 2vw 40px 2vw; border-radius: 14px; box-shadow: 0 6px 32px rgba(0,0,0,0.06);}
     h2 { color: #244385; }
     #statsbar { margin-bottom: 22px; padding: 10px 12px 7px 5px; background: #f8fafd; border-radius: 12px; font-size:1.12em; display: flex; flex-wrap:wrap; gap:18px; align-items:center;}
     .stat { margin-right:28px; font-weight:500; color:#244385; }
     .stat .val { font-size:1.25em; font-weight:bold; margin-right:4px; color:#15172a; }
-    #filterInput { padding:7px 14px; width: 68%; margin-bottom:18px; font-size:1em; border:1.2px solid #b8bdcc; border-radius:8px;}
-    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 1em; margin-top:10px;}
-    th, td { border: 1px solid #d4d8e1; padding: 7px 8px; text-align: left;}
-    th { background: #f6f8fa; cursor:pointer; user-select:none; }
+    #filtersbar { margin-bottom: 18px; display:flex; flex-wrap:wrap; align-items: center; gap: 12px;}
+    #filtersbar select, #filtersbar input { padding:7px 11px; font-size:1em; border-radius:8px; border:1.2px solid #b8bdcc;}
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 1em; margin-top:10px; }
+    th, td { border: 1px solid #d4d8e1; padding: 7px 8px; text-align: left; }
+    th { background: #f6f8fa; cursor:pointer; user-select:none;}
     tr:nth-child(even) { background: #f9fbfd; }
     .actions button { margin-right: 6px; background: #244385; color: white; border: none; border-radius: 5px; padding: 4px 12px; font-size: 0.97em; cursor: pointer; transition: background 0.13s;}
     .actions button:hover { background: #050039; }
     .status-badge { display:inline-block; padding:3px 13px; border-radius:12px; color:white; font-weight:500; font-size:0.97em;}
-    .status-Available { background:#32c683;}
-    .status-Reserved { background:#fcbe2d;}
+    .status-Available { background:#8fd975; color:#246944;}
+    .status-Duplicate { background:#ffe34d; color:#856900;}
+    .status-Reserved { background:#f29c25; color:#6c3d00;}
+    .status-Sold { background:#ff316b; }
     .status-Unavailable { background:#c9ccd5; color:#465164;}
-    .status-Sold { background:#ea5b6d;}
     .update-flash { animation:flash 0.7s; background: #eafadf !important;}
     @keyframes flash { 0%{background:#eafadf;} 100%{background:inherit;} }
     #addForm input { margin-right: 8px; margin-bottom: 8px; padding: 5px 7px; border: 1px solid #d4d8e1; border-radius: 5px; font-size: 1em; }
     #addForm button { background: #2a6eff; color: white; border: none; border-radius: 5px; padding: 5px 18px; font-size: 1em; cursor: pointer; margin-top: 4px;}
-    #addForm button:hover { background: #244385; }
+    #addForm button:hover { background: #244385;}
     @media (max-width: 900px) {
       nav { flex-direction: column; align-items: stretch; padding: 8px 3vw;}
       .nav-links { margin-top: 5px;}
       .nav-links a { margin-left: 20px; font-size: 1em;}
       .nav-logo { height: 30px;}
-      #filterInput { width:100%;}
-      table { font-size:0.98em;}
       #statsbar{flex-direction:column; gap:8px;}
     }
+    .table-wrap { overflow-x:auto;}
   </style>
 </head>
 <body>
@@ -60,30 +57,56 @@
   <div class="container">
     <h2>Property Data Editor</h2>
     <div id="statsbar"></div>
-    <input id="filterInput" placeholder="Type to filter any field (e.g. Block 5, Available, Emely)" />
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th data-col="block">Block</th>
-          <th data-col="unitid">Unit ID</th>
-          <th data-col="status">Status</th>
-          <th data-col="customer_name">Customer</th>
-          <th data-col="reserved_date">Reserved Date</th>
-          <th data-col="sold_price">Sold Price</th>
-          <th data-col="bedroom">Bedroom</th>
-          <th data-col="reservation_agreement">Reservation Agreement</th>
-          <th data-col="deposit_record">Deposit Record</th>
-          <th data-col="id_doc">ID Doc</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div id="filtersbar">
+      <select id="filterField">
+        <option value="">All Fields</option>
+        <option value="block">Block</option>
+        <option value="unitid">Unit ID</option>
+        <option value="status">Status</option>
+        <option value="customer_name">Customer</option>
+        <option value="reserved_date">Reserved Date</option>
+        <option value="bedroom">Bedroom</option>
+      </select>
+      <select id="filterCondition">
+        <option value="contains">contains</option>
+        <option value="equals">equals</option>
+      </select>
+      <select id="filterValue" style="display:none"></select>
+      <input id="filterInput" placeholder="Type to filter..." />
+      <button id="clearFilterBtn" type="button">Clear</button>
+    </div>
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th data-col="block">Block</th>
+            <th data-col="unitid">Unit ID</th>
+            <th data-col="status">Status</th>
+            <th data-col="customer_name">Customer</th>
+            <th data-col="reserved_date">Reserved Date</th>
+            <th data-col="sold_price">Sold Price</th>
+            <th data-col="bedroom">Bedroom</th>
+            <th data-col="reservation_agreement">Reservation Agreement</th>
+            <th data-col="deposit_record">Deposit Record</th>
+            <th data-col="id_doc">ID Doc</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <h3 style="margin-top:30px;">Add New Unit</h3>
     <form id="addForm">
       <input name="block" placeholder="Block" required />
       <input name="unitid" placeholder="Unit ID" required />
-      <input name="status" placeholder="Status" required />
+      <select name="status" required>
+        <option value="">Status</option>
+        <option value="Available">Available</option>
+        <option value="Duplicate">Duplicate</option>
+        <option value="Reserved">Reserved</option>
+        <option value="Sold">Sold</option>
+        <option value="Unavailable">Unavailable</option>
+      </select>
       <input name="customer_name" placeholder="Customer Name" />
       <input name="reserved_date" placeholder="Reserved Date" />
       <input name="sold_price" placeholder="Sold Price" />
@@ -96,10 +119,13 @@
   </div>
   <script>
     const API_URL = "/.netlify/functions/myunits";
+    const STATUS_OPTIONS = ["Available", "Duplicate", "Reserved", "Sold", "Unavailable"];
     let allData = [];
     let editingId = null;
-    let filterValue = "";
-    let sortCol = null, sortAsc = true, flashRowId = null;
+    let flashRowId = null;
+    let filterField = "", filterCondition = "contains", filterValue = "", filterInput = "";
+    let sortCol = null, sortAsc = true;
+
     function fetchData() {
       fetch(API_URL)
         .then(res => res.json())
@@ -107,8 +133,10 @@
           allData = data;
           renderStats();
           renderTable();
+          updateFilterValueDropdown();
         });
     }
+
     function renderStats() {
       const total = allData.length;
       const available = allData.filter(r => (r.status||"").toLowerCase() === "available").length;
@@ -126,13 +154,34 @@
         `<span class="stat"><span class="val">${bedrooms4}</span>4-Bedroom</span>` +
         `<span class="stat"><span class="val">${bedrooms5}</span>5-Bedroom</span>`;
     }
+
+    function formatLink(val) {
+      if (!val) return "";
+      if (/^https?:\/\/\S+/.test(val)) {
+        return `<a href="${val}" target="_blank" rel="noopener">Click here</a>`;
+      }
+      return val;
+    }
+
     function renderTable() {
       const tbody = document.querySelector("#dataTable tbody");
       tbody.innerHTML = "";
       let filtered = allData.filter(row => {
-        let v = filterValue.toLowerCase();
-        if (!v) return true;
-        return Object.values(row).some(val => (val||"").toString().toLowerCase().includes(v));
+        if (!filterField) {
+          // All fields, legacy mode: "contains" filter only
+          let v = filterInput.trim().toLowerCase();
+          if (!v) return true;
+          return Object.values(row).some(val => (val||"").toString().toLowerCase().includes(v));
+        } else {
+          // Field specific filter
+          let rv = filterValue;
+          let ri = filterInput.trim().toLowerCase();
+          let f = filterField;
+          let val = (row[f]||"").toString().toLowerCase();
+          if (filterCondition === "equals" && rv) return val === rv.toLowerCase();
+          if (filterCondition === "contains" && ri) return val.includes(ri);
+          return true;
+        }
       });
       if (sortCol) {
         filtered = filtered.slice().sort((a,b)=>{
@@ -149,10 +198,17 @@
         if (flashRowId === row.id) tr.className = "update-flash";
         let statusCell = `<span class="status-badge status-${(row.status||"").replace(/\s/g,"")}">${row.status||""}</span>`;
         if (isEditing) {
+          let statusSelect = `<select id="edit_status" style="width:94px">` +
+            STATUS_OPTIONS.map(opt=>`<option value="${opt}"${row.status===opt?" selected":""}>${opt}</option>`).join("") +
+            `</select>`;
           tr.innerHTML = `
+            <td class="actions">
+              <button onclick="saveEdit(${row.id})">Save</button>
+              <button onclick="cancelEdit()">Cancel</button>
+            </td>
             <td><input value="${row.block||""}" id="edit_block" style="width:60px"></td>
             <td><input value="${row.unitid||""}" id="edit_unitid" style="width:68px"></td>
-            <td><input value="${row.status||""}" id="edit_status" style="width:84px"></td>
+            <td>${statusSelect}</td>
             <td><input value="${row.customer_name||""}" id="edit_customer" style="width:112px"></td>
             <td><input value="${row.reserved_date||""}" id="edit_reserved" style="width:80px"></td>
             <td><input value="${row.sold_price||""}" id="edit_price" style="width:70px"></td>
@@ -160,13 +216,12 @@
             <td><input value="${row.reservation_agreement||""}" id="edit_agreement" style="width:112px"></td>
             <td><input value="${row.deposit_record||""}" id="edit_deposit" style="width:112px"></td>
             <td><input value="${row.id_doc||""}" id="edit_iddoc" style="width:80px"></td>
-            <td class="actions">
-              <button onclick="saveEdit(${row.id})">Save</button>
-              <button onclick="cancelEdit()">Cancel</button>
-            </td>
           `;
         } else {
           tr.innerHTML = `
+            <td class="actions">
+              <button onclick="editRow(${row.id})">Edit</button>
+            </td>
             <td>${row.block||""}</td>
             <td>${row.unitid||""}</td>
             <td>${statusCell}</td>
@@ -174,26 +229,18 @@
             <td>${row.reserved_date||""}</td>
             <td>${row.sold_price||""}</td>
             <td>${row.bedroom||""}</td>
-            <td>${row.reservation_agreement||""}</td>
-            <td>${row.deposit_record||""}</td>
-            <td>${row.id_doc||""}</td>
-            <td class="actions">
-              <button onclick="editRow(${row.id})">Edit</button>
-            </td>
+            <td>${formatLink(row.reservation_agreement)}</td>
+            <td>${formatLink(row.deposit_record)}</td>
+            <td>${formatLink(row.id_doc)}</td>
           `;
         }
         tbody.appendChild(tr);
       });
       flashRowId = null;
     }
-    function editRow(id) {
-      editingId = id;
-      renderTable();
-    }
-    function cancelEdit() {
-      editingId = null;
-      renderTable();
-    }
+
+    function editRow(id) { editingId = id; renderTable(); }
+    function cancelEdit() { editingId = null; renderTable(); }
     function saveEdit(id) {
       const updated = {
         id,
@@ -213,11 +260,10 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated)
       }).then(() => {
-        editingId = null;
-        flashRowId = id;
-        fetchData();
+        editingId = null; flashRowId = id; fetchData();
       });
     }
+
     document.getElementById("addForm").onsubmit = function(e) {
       e.preventDefault();
       const formData = new FormData(e.target);
@@ -226,16 +272,72 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(json)
-      }).then(() => {
-        fetchData();
-        e.target.reset();
-      });
+      }).then(() => { fetchData(); e.target.reset(); });
     };
-    document.getElementById("filterInput").oninput = function(e) {
-      filterValue = e.target.value;
+
+    // --- Filter logic ---
+    document.getElementById("filterField").onchange = function() {
+      filterField = this.value;
+      updateFilterUI();
       renderTable();
     };
-    // Sort logic
+    document.getElementById("filterCondition").onchange = function() {
+      filterCondition = this.value;
+      updateFilterUI();
+      renderTable();
+    };
+    document.getElementById("filterValue").onchange = function() {
+      filterValue = this.value;
+      renderTable();
+    };
+    document.getElementById("filterInput").oninput = function() {
+      filterInput = this.value;
+      renderTable();
+    };
+    document.getElementById("clearFilterBtn").onclick = function() {
+      filterField = ""; filterCondition = "contains"; filterValue = ""; filterInput = "";
+      document.getElementById("filterField").value = "";
+      document.getElementById("filterCondition").value = "contains";
+      document.getElementById("filterValue").style.display = "none";
+      document.getElementById("filterInput").style.display = "";
+      document.getElementById("filterValue").value = "";
+      document.getElementById("filterInput").value = "";
+      renderTable();
+    };
+
+    function updateFilterValueDropdown() {
+      let ff = document.getElementById("filterField").value;
+      let fv = document.getElementById("filterValue");
+      if (ff === "status") {
+        fv.innerHTML = `<option value="">- Status -</option>` + STATUS_OPTIONS.map(opt=>`<option value="${opt}">${opt}</option>`).join("");
+      } else if (ff && ["block", "unitid", "customer_name", "reserved_date", "bedroom"].includes(ff)) {
+        // List unique values in that column
+        let vals = Array.from(new Set(allData.map(r=>(r[ff]||"")))).filter(v=>v);
+        fv.innerHTML = `<option value="">- Choose -</option>` + vals.map(val=>`<option value="${val}">${val}</option>`).join("");
+      } else {
+        fv.innerHTML = "";
+      }
+    }
+
+    function updateFilterUI() {
+      let ff = document.getElementById("filterField").value;
+      let fc = document.getElementById("filterCondition").value;
+      let fv = document.getElementById("filterValue");
+      let fi = document.getElementById("filterInput");
+      if (ff === "status" || fc === "equals" && ff) {
+        fv.style.display = "";
+        fi.style.display = "none";
+        updateFilterValueDropdown();
+      } else if (fc === "contains" && ff) {
+        fv.style.display = "none";
+        fi.style.display = "";
+      } else {
+        fv.style.display = "none";
+        fi.style.display = "";
+      }
+    }
+
+    // --- Sort logic ---
     document.querySelectorAll("#dataTable th[data-col]").forEach(th=>{
       th.onclick = ()=>{
         const col = th.dataset.col;
@@ -244,6 +346,7 @@
         renderTable();
       };
     });
+
     fetchData();
   </script>
 </body>
