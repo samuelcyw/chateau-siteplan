@@ -257,30 +257,56 @@
       renderTable();
     };
 
+    // -------- THE FIX: Checkbox Choices filter dropdown --------
     function updateFilterUI() {
       const field = document.getElementById("filterField").value;
       const valsEl = document.getElementById("filterValues");
+      // Clean up previous instance
+      if (choicesInstance) { choicesInstance.destroy(); choicesInstance = null; }
       valsEl.innerHTML = "";
       valsEl.style.display = "none";
-      if (choicesInstance) { choicesInstance.destroy(); choicesInstance = null; }
       if (field) {
         valsEl.style.display = "";
         let options = [];
         if (field === "status") {
           options = STATUS_OPTIONS;
         } else {
-          options = Array.from(new Set(allData.map(r=>(r[field]||"")))).filter(v=>v && v !== "undefined");
-          options.sort();
+          options = Array.from(new Set(allData.map(r=>(r[field]||"")))).filter(v=>v && v !== "undefined").sort();
         }
-        valsEl.innerHTML = options.map(opt=>
-          `<option value="${opt}"${currentFilterVals.includes(opt) ? " selected" : ""}>${opt}</option>`).join("");
-        // Recreate Choices.js every time
+        valsEl.innerHTML = options.map(opt =>
+          `<option value="${opt}"${currentFilterVals.includes(opt) ? " selected" : ""}>${opt}</option>`
+        ).join("");
+        // Recreate Choices.js with checkboxes for multi-select
         setTimeout(() => {
           choicesInstance = new Choices(valsEl, {
             removeItemButton: true,
             shouldSort: false,
             searchEnabled: false,
-            placeholderValue: 'Select...'
+            placeholderValue: 'Select...',
+            renderChoiceLimit: -1,
+            duplicateItemsAllowed: false,
+            maxItemCount: -1,
+            callbackOnCreateTemplates: function(template) {
+              return {
+                choice: (classNames, data) => {
+                  return template(`
+                    <div class="${classNames.item} ${classNames.itemChoice} ${data.disabled
+                      ? classNames.itemDisabled
+                      : classNames.itemSelectable
+                    }"
+                    data-select-text="Press to select"
+                    data-choice
+                    data-id="${data.id}"
+                    data-value="${data.value}"
+                    ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'}
+                    >
+                      <input type="checkbox" style="margin-right: 8px;" tabindex="-1" ${data.selected ? 'checked' : ''}/>
+                      <span>${data.label}</span>
+                    </div>
+                  `);
+                }
+              };
+            }
           });
           valsEl.addEventListener('change', function() {
             currentFilterVals = Array.from(this.selectedOptions).map(opt=>opt.value);
@@ -289,6 +315,7 @@
         }, 1);
       }
     }
+    // ----------------------------------------------------------
 
     document.getElementById("clearFilterBtn").onclick = function() {
       document.getElementById("filterField").value = "";
