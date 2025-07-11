@@ -176,14 +176,14 @@
         const tr = document.createElement("tr");
         if (selectedRows.has(row.id)) tr.classList.add("selected");
         if (flashRowId === row.id) tr.classList.add("update-flash");
-        let statusCell = `<span class="status-badge status-${(row.status||"").replace(/\s/g,"")}">${row.status||""}</span>`;
+        let statusCell = `<span class="status-badge status-${(row.status||"").replace(/\\s/g,"")}">${row.status||""}</span>`;
         tr.innerHTML = `
           <td><input type="checkbox" class="rowChk" data-id="${row.id}" ${selectedRows.has(row.id) ? "checked" : ""}></td>
           <td>${row.block||""}</td>
           <td>${row.unitid||""}</td>
           <td>${
             isEditing ?
-            `<select id="edit_status">${STATUS_OPTIONS.map(opt=>`<option value="${opt}"${row.status===opt?" selected":""}>${opt}</option>`).join("")}</select>`
+            `<select id="edit_status">${STATUS_OPTIONS.map(opt=>`<option value="${opt}"${row.status===opt? " selected":""}>${opt}</option>`).join("")}</select>`
             : statusCell
           }</td>
           <td>${isEditing ? `<input value="${row.customer_name||""}" id="edit_customer" style="width:112px">` : (row.customer_name||"")}</td>
