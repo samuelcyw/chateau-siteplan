@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Regency Data Editor</title>
+  <title>Regency Data Viewer (Read-only)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Simple styles for filter checkboxes -->
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; margin: 0; padding: 0;}
     nav { background: #050039; color: white; padding: 12px 32px; font-size: 1.13em; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 16px rgba(0,0,0,0.03);}
@@ -12,7 +11,8 @@
     .nav-links a { color: white; margin-left: 38px; text-decoration: none; font-weight: 500; letter-spacing: 0.01em; padding: 7px 16px; border-radius: 18px; transition: opacity 0.2s, background 0.14s;}
     .nav-links a:hover { background: rgba(255,255,255,0.07); opacity: 0.82;}
     .container { max-width: 100vw; margin: 32px auto; background: #fff; padding: 22px 2vw 40px 2vw; border-radius: 18px; box-shadow: 0 8px 40px rgba(40,50,130,0.06);}
-    h2 { color: #244385;}
+    h2 { color: #244385; margin-top: 0; }
+    #note { margin: 10px 0 20px; padding: 12px 14px; background: #fff4d6; border: 1px solid #ffe4a3; border-radius: 10px; color: #5b4700; }
     #statsbar { margin-bottom: 22px; padding: 10px 12px 7px 5px; background: #f8fafd; border-radius: 12px; font-size:1.12em; display: flex; flex-wrap:wrap; gap:18px; align-items:center;}
     .stat { margin-right:28px; font-weight:500; color:#244385;}
     .stat .val { font-size:1.25em; font-weight:bold; margin-right:4px; color:#15172a;}
@@ -22,23 +22,16 @@
     #filterValues label { display:flex; align-items:center; gap:5px; font-size:1em; }
     #clearFilterBtn { padding:8px 18px; background:#f0f3f8; color:#3b4677; border:1px solid #b8bdcc; border-radius:7px; cursor:pointer; font-weight:500;}
     #clearFilterBtn:hover { background: #e1e6f4;}
-    .bulk-bar { display: flex; gap: 12px; align-items:center; margin-bottom: 15px;}
-    .bulk-bar .count { font-weight:600; color:#284085;}
     .table-wrap { overflow-x:auto; background:#f9fafc; border-radius:14px; box-shadow: 0 2px 8px rgba(100,130,200,0.05);}
     table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 1em; margin-top:10px;}
     th, td { border-bottom: 1px solid #e2e8f0; padding: 11px 8px; text-align: left;}
-    th { background: #f4f7fb; cursor:pointer; user-select:none; position: sticky; top:0; z-index:10;}
-    tr.selected { background: #e5f4fa !important;}
-    .actions button, .bulk-bar button { background: #244385; color: white; border: none; border-radius: 7px; padding: 6px 18px; font-size: 1em; cursor: pointer; transition: background 0.13s; margin-bottom: 3px;}
-    .actions button:hover, .bulk-bar button:hover { background: #050039;}
+    th { background: #f4f7fb; position: sticky; top:0; z-index:10;}
     .status-badge { display:inline-block; padding:6px 15px; border-radius:14px; color:white; font-weight:500; font-size:1em;}
     .status-Available { background:#8fd975; color:#246944;}
     .status-Duplicate { background:#ffe34d; color:#856900;}
     .status-Reserved { background:#f29c25; color:#6c3d00;}
     .status-Sold { background:#ff316b;}
     .status-Unavailable { background:#c9ccd5; color:#465164;}
-    .update-flash { animation:flash 0.7s; background: #eafadf !important;}
-    @keyframes flash { 0%{background:#eafadf;} 100%{background:inherit;} }
     @media (max-width: 900px) {
       nav { flex-direction: column; align-items: stretch; padding: 8px 3vw;}
       .nav-links { margin-top: 5px;}
@@ -59,9 +52,16 @@
       <a href="data.html">Data</a>
     </div>
   </nav>
+
   <div class="container">
-    <h2>Property Data Editor</h2>
+    <h2>Property Data (Read-only)</h2>
+    <div id="note">
+      This page is reading directly from Dropbox JSON. Editing is disabled until a backend (e.g., Netlify Function at
+      <code>/.netlify/functions/myunits</code>) is available. :contentReference[oaicite:1]{index=1}
+    </div>
+
     <div id="statsbar"></div>
+
     <div id="filterbar">
       <label>Filter:
         <select id="filterField">
@@ -75,17 +75,11 @@
       <div id="filterValues"></div>
       <button id="clearFilterBtn" type="button">Clear</button>
     </div>
-    <div class="bulk-bar" id="bulkBar" style="display:none;">
-      <span class="count" id="bulkCount"></span>
-      <button type="button" onclick="bulkUpdate('Reserved')">Mark as Reserved</button>
-      <button type="button" onclick="bulkUpdate('Sold')">Mark as Sold</button>
-      <button type="button" onclick="bulkUpdate('Available')">Mark as Available</button>
-    </div>
+
     <div class="table-wrap">
       <table id="dataTable">
         <thead>
           <tr>
-            <th><input type="checkbox" id="selectAll"></th>
             <th>Block</th>
             <th>Unit ID</th>
             <th>Status</th>
@@ -96,60 +90,70 @@
             <th>Reservation Agreement</th>
             <th>Deposit Record</th>
             <th>ID Doc</th>
-            <th>Edit</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
   </div>
+
   <script>
-    const API_URL = "/.netlify/functions/myunits";
-    const STATUS_OPTIONS = ["Available", "Duplicate", "Reserved", "Sold", "Unavailable"];
+    /* ---------- CONFIG ---------- */
+    // Pull from the same RAW Dropbox link as the map page:
+    const CUSTOMER_JSON_URL = 'https://dl.dropboxusercontent.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
+
+    const STATUS_OPTIONS = ["Available", "Duplicate", "Reserved", "Sold", "Unavailable"]; // used for filters
     let allData = [];
-    let editingId = null;
-    let flashRowId = null;
-    let selectedRows = new Set();
     let currentFilterField = "status";
     let currentFilterVals = [];
 
-    function fetchData() {
-      fetch(API_URL)
-        .then(res => res.json())
-        .then(data => {
-          allData = data;
-          renderStats();
-          renderTable();
-          updateFilterUI();
-          // Force the dropdown to build on first load:
-          document.getElementById("filterField").dispatchEvent(new Event("change"));
-        });
+    /* ---------- HELPERS ---------- */
+    const bust = url => url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+    function extractArray(json){
+      if (Array.isArray(json)) return json;
+      if (Array.isArray(json?.Data)) return json.Data;
+      if (Array.isArray(json?.['Array Aggregator output'])) return json['Array Aggregator output'];
+      if (Array.isArray(json?.Data?.[0]?.array)) return json.Data[0].array;
+      if (Array.isArray(json?.Data?.array)) return json.Data.array;
+      return [];
     }
-
-    function renderStats() {
-      const total = allData.length;
-      const available = allData.filter(r => (r.status||"").toLowerCase() === "available").length;
-      const reserved = allData.filter(r => (r.status||"").toLowerCase() === "reserved").length;
-      const unavailable = allData.filter(r => (r.status||"").toLowerCase() === "unavailable").length;
-      const sold = allData.filter(r => (r.status||"").toLowerCase() === "sold").length;
-      const bedrooms4 = allData.filter(r => r.bedroom == 4).length;
-      const bedrooms5 = allData.filter(r => r.bedroom == 5).length;
-      document.getElementById("statsbar").innerHTML =
-        `<span class="stat"><span class="val">${total}</span>Units</span>` +
-        `<span class="stat"><span class="val">${available}</span>Available</span>` +
-        `<span class="stat"><span class="val">${reserved}</span>Reserved</span>` +
-        `<span class="stat"><span class="val">${sold}</span>Sold</span>` +
-        `<span class="stat"><span class="val">${unavailable}</span>Unavailable</span>` +
-        `<span class="stat"><span class="val">${bedrooms4}</span>4-Bedroom</span>` +
-        `<span class="stat"><span class="val">${bedrooms5}</span>5-Bedroom</span>`;
+    function normalizeStatus(s){
+      if(!s) return "";
+      s = String(s).trim().toLowerCase();
+      if (s.startsWith('avail')) return 'Available';
+      if (s.startsWith('reserv')) return 'Reserved';
+      if (s.startsWith('sold')) return 'Sold';
+      if (s.startsWith('dup')) return 'Duplicate';
+      if (s.startsWith('unavail') || s==='na') return 'Unavailable';
+      return s;
     }
-
-    function formatLink(val) {
+    function formatLink(val){
       if (!val) return "";
       if (/^https?:\/\/\S+/.test(val)) {
         return `<a href="${val}" target="_blank" rel="noopener">Click here</a>`;
       }
       return val;
+    }
+
+    /* ---------- RENDER ---------- */
+    function renderStats() {
+      const total = allData.length;
+      const counts = Object.fromEntries(STATUS_OPTIONS.map(s => [s, 0]));
+      for (const r of allData) {
+        const s = (r.status||"");
+        if (counts.hasOwnProperty(s)) counts[s] += 1;
+      }
+      const bedrooms4 = allData.filter(r => String(r.bedroom) === "4").length;
+      const bedrooms5 = allData.filter(r => String(r.bedroom) === "5").length;
+
+      document.getElementById("statsbar").innerHTML =
+        `<span class="stat"><span class="val">${total}</span>Units</span>` +
+        `<span class="stat"><span class="val">${counts.Available}</span>Available</span>` +
+        `<span class="stat"><span class="val">${counts.Reserved}</span>Reserved</span>` +
+        `<span class="stat"><span class="val">${counts.Sold}</span>Sold</span>` +
+        `<span class="stat"><span class="val">${counts.Unavailable}</span>Unavailable</span>` +
+        `<span class="stat"><span class="val">${bedrooms4}</span>4-Bedroom</span>` +
+        `<span class="stat"><span class="val">${bedrooms5}</span>5-Bedroom</span>`;
     }
 
     function renderTable() {
@@ -159,92 +163,24 @@
       if (currentFilterField && currentFilterVals.length) {
         filtered = allData.filter(row => currentFilterVals.includes((row[currentFilterField]||"").toString()));
       }
-      filtered.forEach(row => {
-        const isEditing = editingId === row.id;
+      for (const row of filtered) {
         const tr = document.createElement("tr");
-        if (selectedRows.has(row.id)) tr.classList.add("selected");
-        if (flashRowId === row.id) tr.classList.add("update-flash");
-        let statusCell = `<span class="status-badge status-${(row.status||"").replace(/\\s/g,"")}">${row.status||""}</span>`;
+        const statusBadge = `<span class="status-badge status-${(row.status||"").replace(/\s/g,"")}">${row.status||""}</span>`;
         tr.innerHTML = `
-          <td><input type="checkbox" class="rowChk" data-id="${row.id}" ${selectedRows.has(row.id) ? "checked" : ""}></td>
           <td>${row.block||""}</td>
           <td>${row.unitid||""}</td>
-          <td>${
-            isEditing ?
-            `<select id="edit_status">${STATUS_OPTIONS.map(opt=>`<option value="${opt}"${row.status===opt? " selected":""}>${opt}</option>`).join("")}</select>`
-            : statusCell
-          }</td>
-          <td>${isEditing ? `<input value="${row.customer_name||""}" id="edit_customer" style="width:112px">` : (row.customer_name||"")}</td>
-          <td>${isEditing ? `<input value="${row.reserved_date||""}" id="edit_reserved" style="width:80px">` : (row.reserved_date||"")}</td>
-          <td>${isEditing ? `<input value="${row.sold_price||""}" id="edit_price" style="width:70px">` : (row.sold_price||"")}</td>
-          <td>${isEditing ? `<input value="${row.bedroom||""}" id="edit_bedroom" style="width:40px">` : (row.bedroom||"")}</td>
-          <td>${isEditing ? `<input value="${row.reservation_agreement||""}" id="edit_agreement" style="width:112px">` : formatLink(row.reservation_agreement)}</td>
-          <td>${isEditing ? `<input value="${row.deposit_record||""}" id="edit_deposit" style="width:112px">` : formatLink(row.deposit_record)}</td>
-          <td>${isEditing ? `<input value="${row.id_doc||""}" id="edit_iddoc" style="width:80px">` : formatLink(row.id_doc)}</td>
-          <td class="actions">
-            ${isEditing ?
-              `<button onclick="saveEdit(${row.id})">Save</button>
-               <button onclick="cancelEdit()">Cancel</button>` :
-              `<button onclick="editRow(${row.id})">Edit</button>`
-            }
-          </td>
+          <td>${statusBadge}</td>
+          <td>${row.customer_name||""}</td>
+          <td>${row.reserved_date||""}</td>
+          <td>${row.sold_price||""}</td>
+          <td>${row.bedroom||""}</td>
+          <td>${formatLink(row.reservation_agreement)}</td>
+          <td>${formatLink(row.deposit_record)}</td>
+          <td>${formatLink(row.id_doc)}</td>
         `;
         tbody.appendChild(tr);
-      });
-      flashRowId = null;
-      updateBulkBar();
-      document.querySelectorAll('.rowChk').forEach(chk=>{
-        chk.onchange = function() {
-          const id = parseInt(this.dataset.id);
-          if(this.checked) selectedRows.add(id);
-          else selectedRows.delete(id);
-          updateBulkBar();
-          renderTable();
-        };
-      });
-      document.getElementById('selectAll').checked = filtered.length > 0 && filtered.every(row => selectedRows.has(row.id));
-    }
-
-    function updateBulkBar() {
-      const bar = document.getElementById("bulkBar");
-      const count = document.getElementById("bulkCount");
-      if (selectedRows.size > 0) {
-        bar.style.display = "";
-        count.textContent = `${selectedRows.size} unit(s) selected`;
-      } else {
-        bar.style.display = "none";
       }
     }
-
-    function editRow(id) { editingId = id; renderTable();}
-    function cancelEdit() { editingId = null; renderTable();}
-    function saveEdit(id) {
-      const updated = {
-        id,
-        status: document.getElementById("edit_status").value,
-        customer_name: document.getElementById("edit_customer").value,
-        reserved_date: document.getElementById("edit_reserved").value,
-        sold_price: document.getElementById("edit_price").value,
-        bedroom: document.getElementById("edit_bedroom").value,
-        reservation_agreement: document.getElementById("edit_agreement").value,
-        deposit_record: document.getElementById("edit_deposit").value,
-        id_doc: document.getElementById("edit_iddoc").value
-      };
-      fetch(API_URL, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated)
-      }).then(() => {
-        editingId = null; flashRowId = id; fetchData();
-      });
-    }
-
-    document.getElementById("filterField").onchange = function() {
-      currentFilterField = this.value;
-      currentFilterVals = [];
-      updateFilterUI();
-      renderTable();
-    };
 
     function updateFilterUI() {
       const field = document.getElementById("filterField").value;
@@ -271,6 +207,43 @@
       }
     }
 
+    /* ---------- LOAD ---------- */
+    async function fetchData(){
+      const res = await fetch(bust(CUSTOMER_JSON_URL), { cache: 'no-store' });
+      const raw = await res.json();
+      const arr = extractArray(raw);
+
+      // Map Dropbox customer JSON → table schema used here
+      allData = arr.map((r, i) => {
+        const unit = r.unitId || r.unitID || "";
+        return {
+          id: i + 1,
+          block: r.Block || r.block || "",
+          unitid: unit,
+          status: normalizeStatus(r.status),
+          customer_name: r["Customer Name"] || r.customer_name || "",
+          reserved_date: r["Reserved Date"] || r.reserved_date || "",
+          sold_price: r["Sold Price"] || r.sold_price || "",
+          bedroom: r.Bedroom ?? r.bedroom ?? "",
+          reservation_agreement: r["Reservation agreement"] || r.reservation_agreement || "",
+          deposit_record: r["Deposit record"] || r.deposit_record || "",
+          id_doc: r.ID || r.id_doc || ""
+        };
+      });
+
+      renderStats();
+      renderTable();
+      updateFilterUI();
+      document.getElementById("filterField").dispatchEvent(new Event("change"));
+    }
+
+    document.getElementById("filterField").onchange = function() {
+      currentFilterField = this.value;
+      currentFilterVals = [];
+      updateFilterUI();
+      renderTable();
+    };
+
     document.getElementById("clearFilterBtn").onclick = function() {
       document.getElementById("filterField").value = "status";
       currentFilterField = "status";
@@ -279,33 +252,6 @@
       renderTable();
       document.getElementById("filterField").dispatchEvent(new Event("change"));
     };
-
-    document.getElementById("selectAll").onchange = function() {
-      const filtered = allData.filter(row => {
-        if (currentFilterField && currentFilterVals.length)
-          return currentFilterVals.includes((row[currentFilterField]||"").toString());
-        return true;
-      });
-      if(this.checked) filtered.forEach(row=>selectedRows.add(row.id));
-      else filtered.forEach(row=>selectedRows.delete(row.id));
-      renderTable();
-    };
-
-    function bulkUpdate(newStatus) {
-      if (!confirm(`Are you sure you want to mark ${selectedRows.size} unit(s) as ${newStatus}?`)) return;
-      const promises = Array.from(selectedRows).map(id => {
-        let row = allData.find(r => r.id === id);
-        return fetch(API_URL, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, status: newStatus })
-        });
-      });
-      Promise.all(promises).then(()=>{
-        selectedRows.clear();
-        fetchData();
-      });
-    }
 
     fetchData();
   </script>
