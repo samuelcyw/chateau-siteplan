@@ -59,7 +59,7 @@
     /* ---------- CONFIG ---------- */
     const REFRESH_MS = 60_000;
 
-    // ✅ Use RAW Dropbox URLs so fetch() returns JSON (not an HTML page)
+    // Use RAW Dropbox URLs so fetch() gets JSON
     const CUSTOMER_JSON_URL = 'https://dl.dropboxusercontent.com/scl/fi/9tgtfvjsf2xp262eqvr5v/customerdata.json?rlkey=c9hocv3qndpuux8flfrzlv7ky&raw=1';
     const STATUS_JSON_URL   = 'https://dl.dropboxusercontent.com/scl/fi/zptyn3as4w9h9ao9smdy5/status.json?rlkey=g1gumloy76bw7m7atftifnxt8&raw=1';
 
@@ -67,7 +67,7 @@
       Available:'#CCEEEE', Reserved:'orange', Duplicate:'#FFD700', Sold:'#FF7F7F', Unavailable:'#CCCCCC'
     };
 
-    /* ---------- UTILITIES ---------- */
+    /* ---------- UTILS ---------- */
     const $ = s => document.querySelector(s);
     const bust = url => url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
     const isValidUrl = s => { try { new URL(s); return true; } catch { return false; } };
@@ -83,19 +83,28 @@
       return null;
     }
 
-    // Flexible extractor for various Make/Dropbox JSON formats
+    // ✅ Prefer nested arrays first (your Dropbox shape is Data[0].array)
     function extractArray(json){
       if (Array.isArray(json)) return json;
-      if (Array.isArray(json?.Data)) return json.Data;
-      if (Array.isArray(json?.['Array Aggregator output'])) return json['Array Aggregator output'];
+
+      // 1) { Data:[ { array:[ ... ] } ] }
       if (Array.isArray(json?.Data?.[0]?.array)) return json.Data[0].array;
+
+      // 2) { Data:{ array:[ ... ] } }
       if (Array.isArray(json?.Data?.array)) return json.Data.array;
+
+      // 3) { "Array Aggregator output":[ ... ] }
+      if (Array.isArray(json?.['Array Aggregator output'])) return json['Array Aggregator output'];
+
+      // 4) Fallback: { Data:[ ... ] }
+      if (Array.isArray(json?.Data)) return json.Data;
+
       return [];
     }
 
     /* ---------- STATE ---------- */
-    let customerRows = [];
-    let customerMap = new Map();
+    let customerRows = [];           // raw array of customer records
+    let customerMap = new Map();     // unitId -> record
     let statusCount = 0;
 
     function rebuildCustomerMap(){
@@ -109,6 +118,7 @@
     async function refreshCustomerData(){
       const res = await fetch(bust(CUSTOMER_JSON_URL), { cache:'no-store' });
       const json = await res.json();
+      window._customerJSON = json; // for quick inspection
       customerRows = extractArray(json);
       rebuildCustomerMap();
     }
@@ -123,6 +133,7 @@
     async function applyStatusAndClicks(){
       const res = await fetch(bust(STATUS_JSON_URL), { cache:'no-store' });
       const json = await res.json();
+      window._statusJSON = json; // for quick inspection
       const units = extractArray(json);
 
       let painted = 0;
@@ -134,7 +145,7 @@
         if (!id || !status) continue;
 
         const g = document.getElementById(id);
-        if (!g) continue;
+        if (!g) continue; // not present in SVG
 
         const shape = g.querySelector('[id$="-shape"]') || g.querySelector('path,rect,polygon');
         if (shape && STATUS_COLOR[status]) {
@@ -156,7 +167,10 @@
       let html = `<div id="unit-header" class="unit-header">Unit ${unitId.replace('unit','')}</div>`;
 
       if (!u){
-        html += `<em style="color:#aaa;">No data available.</em>`;
+        html += `<em style="color:#aaa;">No data available.</em>
+                 <div class="info-row" style="margin-top:8px;color:#9aa1b5;font-size:.9em">
+                   Tip: Customers loaded = <b>${customerRows.length}</b>. If this is 0, verify the CUSTOMER_JSON_URL points to the updated Dropbox file.
+                 </div>`;
       } else {
         const fields = [
           ['Status','status'],
@@ -195,19 +209,22 @@
 
     /* ---------- INIT ---------- */
     document.addEventListener('DOMContentLoaded', async () => {
-      $('#modal-close-btn').onclick = closeModal;
-      $('#unit-modal .modal-overlay').onclick = closeModal;
+      document.getElementById('modal-close-btn').onclick = closeModal;
+      document.querySelector('#unit-modal .modal-overlay').onclick = closeModal;
       window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+      // First load
       try {
         await refreshCustomerData();
         await loadSiteplan();
       } catch (e){ console.error('initial load error', e); }
 
-      $('#refresh-btn').onclick = async () => {
+      // Manual refresh
+      document.getElementById('refresh-btn').onclick = async () => {
         try { await refreshCustomerData(); await loadSiteplan(); } catch(e){ console.error(e); }
       };
 
+      // Periodic refresh
       setInterval(async () => {
         try { await refreshCustomerData(); await loadSiteplan(); } catch(e){ console.error('periodic refresh error', e); }
       }, REFRESH_MS);
